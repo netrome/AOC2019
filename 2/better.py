@@ -17,14 +17,13 @@ def halt(memory, inptr):
     return "halt", None
 
 
-instructions = {
-    1: add,
-    2: multiply,
-    99: halt,
-}
-
-
 def compute(program, verb=None, noun=None):
+    opcodes = {
+        1: add,
+        2: multiply,
+        99: halt,
+    }
+
     memory = list(map(int, program.split(",")))
     memory[1] = verb
     memory[2] = noun
@@ -34,7 +33,7 @@ def compute(program, verb=None, noun=None):
 
     while status == "ok":
         instruction = memory[inptr]
-        status, inptr = instructions[instruction](memory, inptr)
+        status, inptr = opcodes[instruction](memory, inptr)
 
     return memory[0]
 
