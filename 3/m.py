@@ -11,26 +11,25 @@ def solve(inp):
         "L": -1,
     }
 
-    grid = defaultdict(set)
+    grid = defaultdict(lambda: defaultdict(int))
 
-    def add(origin, command, tag):
+    def add_wire(origin, distance, command, tag):
         direction = directions[command[0]]
         length = int(command[1:])
 
         for i in range(1, length + 1):
             point = origin + i * direction
-            grid[point].add(tag)
+            grid[point][tag] = distance + i
 
-        return origin + length * direction
+        return origin + length * direction, distance + length
 
     for idx, wire in enumerate(wires):
-        origin = 0j
+        origin, distance = 0j, 0
         for command in wire:
-            origin = add(origin, command, idx)
+            origin, distance = add_wire(origin, distance, command, idx)
 
-    intersections = tuple(map(lambda t: t[0], filter(lambda t: len(t[1]) > 1, grid.items())))
-    distances = tuple(map(lambda i: int(abs(i.real) + abs(i.imag)), intersections))
-
+    distances = tuple(map(lambda t: t[1][0] + t[1][1], filter(lambda t: len(t[1]) > 1, grid.items())))
+    print(distances)
 
     return(sorted(distances)[0])
 
