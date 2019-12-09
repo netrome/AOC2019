@@ -9,7 +9,7 @@ def _getparam(memory, idx, mode, relative_base):
     if mode == 0: # Position mode
         return memory[memory[idx]]
     if mode == 2:
-        return memory[memory[idx + relative_base]]
+        return memory[memory[idx] + relative_base]
     return memory[idx] # Immediate mode
 
 
@@ -66,7 +66,7 @@ def geninput(stream: queue.Queue):
     def inputop(memory, inptr, pmodes, relative_base):
         outp  = memory[inptr + 1]
         if pmodes[0] == 2:
-            outp = memory[inptr + 1 + relative_base]
+            outp = memory[inptr + 1] + relative_base
         memory[outp] = stream.get()
         return "ok", inptr + 2, relative_base
     return inputop
