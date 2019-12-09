@@ -15,12 +15,20 @@ def _getparam(memory, idx, mode, relative_base):
 
 def add(memory, inptr, pmodes, relative_base):
     arg1, arg2, outp  = _getparam(memory, inptr + 1, pmodes[0], relative_base), _getparam(memory, inptr + 2, pmodes[1], relative_base), memory[inptr + 3]
+
+    if pmodes[2] == 2:
+        outp += relative_base
+
     memory[outp] = arg1 + arg2
     return "ok", inptr + 4, relative_base
 
 
 def multiply(memory, inptr, pmodes, relative_base):
     arg1, arg2, outp  = _getparam(memory, inptr + 1, pmodes[0], relative_base), _getparam(memory, inptr + 2, pmodes[1], relative_base), memory[inptr + 3]
+
+    if pmodes[2] == 2:
+        outp += relative_base
+
     memory[outp] = arg1 * arg2
     return "ok", inptr + 4, relative_base
 
@@ -41,6 +49,10 @@ def jump_if_false(memory, inptr, pmodes, relative_base):
 
 def less_than(memory, inptr, pmodes, relative_base):
     arg1, arg2, outp  = _getparam(memory, inptr + 1, pmodes[0], relative_base), _getparam(memory, inptr + 2, pmodes[1], relative_base), memory[inptr + 3]
+
+    if pmodes[2] == 2:
+        outp += relative_base
+
     if arg1 < arg2:
         memory[outp] = 1
     else:
@@ -50,6 +62,10 @@ def less_than(memory, inptr, pmodes, relative_base):
 
 def equals(memory, inptr, pmodes, relative_base):
     arg1, arg2, outp  = _getparam(memory, inptr + 1, pmodes[0], relative_base), _getparam(memory, inptr + 2, pmodes[1], relative_base), memory[inptr + 3]
+
+    if pmodes[2] == 2:
+        outp += relative_base
+
     if arg1 == arg2:
         memory[outp] = 1
     else:
@@ -66,7 +82,7 @@ def geninput(stream: queue.Queue):
     def inputop(memory, inptr, pmodes, relative_base):
         outp  = memory[inptr + 1]
         if pmodes[0] == 2:
-            outp = memory[inptr + 1] + relative_base
+            outp += relative_base
         memory[outp] = stream.get()
         return "ok", inptr + 2, relative_base
     return inputop
@@ -126,47 +142,14 @@ def compute(program, istream: queue.Queue, ostream: queue.Queue):
 
 def run_boost(program) -> queue.Queue:
     istream = queue.Queue()
-    istream.put(1)
+    istream.put(2)
     ostream = queue.Queue()
     compute(program, istream, ostream)
     return ostream
 
 
-def run_sequence_fn(program):
-    def run_sequence(phase_settings):
-        first_istream = queue.Queue()
-        istream = first_istream
-        ostream = queue.Queue()
-        istream.put(phase_settings[0])
-        istream.put(0)
-
-        threads = []
-
-        threads.append(threading.Thread(target=compute, args=(program, istream, ostream)))
-
-        for phase_setting in phase_settings[1:-1]:
-            istream = ostream
-            ostream = queue.Queue()
-            istream.put(phase_setting)
-            threads.append(threading.Thread(target=compute, args=(program, istream, ostream)))
-
-        istream = ostream
-        ostream = first_istream
-        istream.put(phase_settings[-1])
-        threads.append(threading.Thread(target=compute, args=(program, istream, ostream)))
-
-        for thread in threads:
-            thread.start()
-
-        for thread in threads:
-            thread.join()
-
-        return ostream.get()
-    return run_sequence
-
-
 def main():
-    program = open("test1").read()
+    program = open("in").read()
     
     ostream = run_boost(program)
     while not ostream.empty():
