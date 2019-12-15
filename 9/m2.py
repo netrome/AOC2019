@@ -5,7 +5,7 @@ import intcomp
 
 def run_boost(program) -> queue.Queue:
     computer = intcomp.Computer()
-    computer.input(1)
+    computer.input(2)
     computer.run(program)
     return computer.join()
 

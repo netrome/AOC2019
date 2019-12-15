@@ -153,6 +153,12 @@ class Computer:
     def input(self, num: int):
         self.istream.put(num)
 
+    def get(self):
+        try:
+            return self.ostream.get(timeout=1)
+        except Exception:
+            return "Probably Done"
+
     def run(self, program):
         self.process = threading.Thread(target=compute, args=(program, self.istream, self.ostream))
         self.process.start()
