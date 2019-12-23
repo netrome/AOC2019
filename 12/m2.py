@@ -1,6 +1,10 @@
+from collections import Counter
 import copy
 import numpy as np
 import re
+
+
+PRIMES = set(map(int, re.findall("\d+", open("./10000.txt").read())))
 
 
 def parse_line(line):
@@ -67,16 +71,28 @@ def argmin(t):
     return sorted(zip(t, range(3)))[0][1]
 
 
+def prime_factors(n):
+    for prime in PRIMES:
+        while n % prime == 0:
+            n /= prime
+            yield prime
+
+
 def solve(px, py, pz):
-    initial_periods = (px, py, pz)
+    periods = (px, py, pz)
 
-    periods = list(initial_periods)
+    factors = tuple(map(Counter, map(prime_factors, periods)))
 
-    while not (periods[0] == periods[1] == periods[2]):
-        idx = argmin(periods)
-        periods[idx] += initial_periods[idx]
+    result = 1
 
-    return periods[0]
+    for prime in PRIMES:
+        counts = max(factors[i][prime] for i in range(3))
+
+        if counts > 0:
+            result *= prime ** counts
+
+
+    return result
 
 
 def part2(lines):
@@ -100,7 +116,6 @@ def part2(lines):
     print(f"{[px, py, pz]}")
 
     return solve(px, py, pz)
-
 
 ans = part1(open("in", "r").readlines(), 1000)
 print(f"Part1: {ans}")
