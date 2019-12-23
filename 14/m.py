@@ -23,29 +23,30 @@ def parse_reactions(line):
 
 
 def expand(reactions, targets, key):
-    required_quantity = targets[key]
+    required_quantity = dict(targets)[key]
     min_unit = reactions[key]["quantity"]
 
     num_reactions = (required_quantity - 1) // min_unit + 1
 
-    new_targets = copy.deepcopy(targets)
+    new_targets = defaultdict(int)
+    new_targets.update(targets)
+    del new_targets[key]
 
-    new_targets[key] = 0
     for source, value in reactions[key]["sources"].items():
         new_targets[source] += value * num_reactions
 
-    return new_targets
+    return frozenset(new_targets.items())
 
 
 def find_ore(reactions, targets):
     candidates = []
-    for key, value in targets.items():
+    for key, value in targets:
         if key != "ORE" and value > 0:
             new_targets = expand(reactions, targets, key)
             candidates.append(find_ore(reactions, new_targets))
 
     if len(candidates) == 0:
-        return targets["ORE"]
+        return dict(targets)["ORE"]
 
     return min(candidates)
 
@@ -55,8 +56,7 @@ def part1():
 
     reactions = dict(map(parse_reactions, lines))
 
-    targets = defaultdict(int)
-    targets["FUEL"] = 1
+    targets = frozenset({("FUEL", 1)})
 
     return find_ore(reactions, targets)
 
