@@ -38,6 +38,20 @@ def render(universe):
         print()
 
 
+def super_smart_ai(universe):
+    reverse_universe = dict(map(reversed, universe.items()))
+    ball = reverse_universe[4]
+    paddle = reverse_universe[3]
+
+    diff = ball.real - paddle.real
+
+    if diff > 0:
+        return 1
+    if diff < 0:
+        return - 1
+    return 0
+
+
 def get_universe(tiles):
     universe = defaultdict(int)
     universe.update(map(parse_tile, zip(*([iter(tiles)] * 3))))
@@ -64,22 +78,19 @@ def part2():
     computer.run(program)
 
     universe = defaultdict(int)
+    time.sleep(1)
 
     while True:
         if not computer.process.is_alive():
             break
 
-        time.sleep(0.01)
+        time.sleep(0.04)
         tiles = computer.get_all()
 
         universe.update(get_universe(tiles))
         render(universe)
 
-        inp = input("Next move")
-        if len(inp) > 0:
-            computer.input(incodes[inp[0]])
-        else:
-            computer.input(0)
+        computer.input(super_smart_ai(universe))
 
 
     return len(list(filter(lambda i: i==2, universe.values())))
