@@ -53,17 +53,30 @@ def part1(lines, steps):
     return (np.abs(np.array([x, y, z])).sum(0) * np.abs(np.array([dx, dy, dz])).sum(0)).sum()
 
 
-def find(x, dx):
+def period(x, dx, initial_x):
     for i in range(1, 1000_000):
         step(x, dx)
-        step(y, dy)
-        step(z, dz)
 
         x_state = tuple([*x, *dx])
 
         if x_state == initial_x:
             return i
 
+
+def argmin(t):
+    return sorted(zip(t, range(3)))[0][1]
+
+
+def solve(px, py, pz):
+    initial_periods = (px, py, pz)
+
+    periods = list(initial_periods)
+
+    while not (periods[0] == periods[1] == periods[2]):
+        idx = argmin(periods)
+        periods[idx] += initial_periods[idx]
+
+    return periods[0]
 
 
 def part2(lines):
@@ -77,9 +90,21 @@ def part2(lines):
     initial_y = tuple([*y, *dy])
     initial_z = tuple([*z, *dz])
 
+    print("Finding px")
+    px = period(x, dx, initial_x)
+    print("Finding py")
+    py = period(y, dy, initial_y)
+    print("Finding pz")
+    pz = period(z, dz, initial_z)
+
+    print(f"{[px, py, pz]}")
+
+    return solve(px, py, pz)
+
 
 ans = part1(open("in", "r").readlines(), 1000)
 print(f"Part1: {ans}")
 
 
-part2(open("in", "r").readlines())
+ans2 = part2(open("in", "r").readlines())
+print(f"Part2: {ans2}")
