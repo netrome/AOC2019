@@ -2,8 +2,8 @@ import functools
 
 from collections import defaultdict
 
-import queue
 import copy
+import queue
 import re
 
 
@@ -83,7 +83,7 @@ def gen_find_ore(reactions, distances):
 
 
 def part1():
-    lines = open("test5", "r").readlines()
+    lines = open("in", "r").readlines()
 
     reactions = dict(map(parse_reactions, lines))
     dists = distances(reactands(reactions))
@@ -95,4 +95,30 @@ def part1():
     return find_ore(targets)
 
 
+def part2():
+    lines = open("in", "r").readlines()
+
+    reactions = dict(map(parse_reactions, lines))
+    dists = distances(reactands(reactions))
+    find_ore = gen_find_ore(reactions, dists)
+
+    max_ore = 1000000000000
+
+    approx_ore_per_fuel = find_ore(frozenset({("FUEL", 1)}))
+
+    fuel_guess = max_ore // approx_ore_per_fuel
+    total_ore = find_ore(frozenset({("FUEL", fuel_guess)}))
+
+    for i in range(100):
+        delta = max_ore - total_ore
+
+        step = delta // approx_ore_per_fuel
+
+        fuel_guess += step
+        total_ore = find_ore(frozenset({("FUEL", fuel_guess)}))
+
+    return fuel_guess
+
+
 print(f"Part 1: {part1()}")
+print(f"Part 2: {part2()}")
