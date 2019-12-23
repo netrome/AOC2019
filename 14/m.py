@@ -38,27 +38,31 @@ def expand(reactions, targets, key):
     return frozenset(new_targets.items())
 
 
-def find_ore(reactions, targets):
-    candidates = []
-    for key, value in targets:
-        if key != "ORE" and value > 0:
-            new_targets = expand(reactions, targets, key)
-            candidates.append(find_ore(reactions, new_targets))
+def gen_find_ore(reactions):
+    @functools.lru_cache(100_000)
+    def find_ore(targets):
+        candidates = []
+        for key, value in targets:
+            if key != "ORE" and value > 0:
+                new_targets = expand(reactions, targets, key)
+                candidates.append(find_ore(new_targets))
 
-    if len(candidates) == 0:
-        return dict(targets)["ORE"]
+        if len(candidates) == 0:
+            return dict(targets)["ORE"]
 
-    return min(candidates)
+        return min(candidates)
+    return find_ore
 
 
 def part1():
-    lines = open("test2", "r").readlines()
+    lines = open("test3", "r").readlines()
 
     reactions = dict(map(parse_reactions, lines))
+    find_ore = gen_find_ore(reactions)
 
     targets = frozenset({("FUEL", 1)})
 
-    return find_ore(reactions, targets)
+    return find_ore(targets)
 
 
 print(f"Part 1: {part1()}")
