@@ -62,6 +62,7 @@ def fewest_commands(maze):
         visited.add(position)
 
         if maze[position] == 2:
+            print(position)
             return distance
 
         for direction in DIRECTIONS.values():
@@ -70,6 +71,25 @@ def fewest_commands(maze):
                 q.put((candidate_position, distance + 1))
 
     return 1337
+
+
+def oxygen_time(maze):
+    q = queue.Queue()
+
+    q.put((-18 - 12j, 0))
+    visited = set()
+
+    while not q.empty():
+        position, distance = q.get()
+        visited.add(position)
+
+        for direction in DIRECTIONS.values():
+            candidate_position = position + direction
+
+            if candidate_position not in visited and maze[candidate_position] != 0:
+                q.put((candidate_position, distance + 1))
+
+    return distance
 
 
 # I should probably factor out this logic, since I do this so often...
@@ -106,5 +126,15 @@ def part1():
     return fewest_commands(maze)
 
 
+def part2():
+    program = open("in", "r").read().strip()
+    computer = intcomp.Computer()
+    computer.run(program)
+
+    maze = explore(computer)
+    return oxygen_time(maze)
+
+
 print(f"Part 1: {part1()}")
+print(f"Part 2: {part2()}")
 
