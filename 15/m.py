@@ -1,4 +1,5 @@
 from collections import defaultdict
+import queue
 
 import intcomp
 
@@ -43,12 +44,32 @@ def explore(computer):
     position = 0 + 0j
     explored_maze = {position: 1}
 
-    for i in range(200000):
+    for i in range(5000):
         step = choose_step(payloads, explored_maze, position)
         position = give_order(payloads, explored_maze, position, step, computer)
-        print(render(explored_maze))
 
     return explored_maze
+
+
+def fewest_commands(maze):
+    q = queue.Queue()
+
+    q.put((0 + 0j, 0))
+    visited = set()
+
+    while not q.empty():
+        position, distance = q.get()
+        visited.add(position)
+
+        if maze[position] == 2:
+            return distance
+
+        for direction in DIRECTIONS.values():
+            candidate_position = position + direction
+            if candidate_position not in visited and maze[candidate_position] != 0:
+                q.put((candidate_position, distance + 1))
+
+    return 1337
 
 
 # I should probably factor out this logic, since I do this so often...
@@ -81,8 +102,9 @@ def part1():
     computer = intcomp.Computer()
     computer.run(program)
 
-    explore(computer)
+    maze = explore(computer)
+    return fewest_commands(maze)
 
 
-part1()
+print(f"Part 1: {part1()}")
 
