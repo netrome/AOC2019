@@ -16,7 +16,7 @@ def scaffolds(codes):
     pos = 0+0j
 
     for code in codes:
-        if code != 46:
+        if code != 46 and code != 10:
             u[pos] = 1
         if code == 10:
             pos = 0 + (pos.imag + 1) * 1j
@@ -124,7 +124,7 @@ def repeating_subsequences(seq):
 
 print(f"Part 1: {part1()}")
 seq = get_path_for_part2().split(",")
-subseqs = repeating_subsequences(seq)
 print(",".join(seq))
-for val, sub in subseqs:
-    print(",".join(sub))
+#subseqs = repeating_subsequences(seq)
+#for val, sub in subseqs:
+#    print(",".join(sub))
