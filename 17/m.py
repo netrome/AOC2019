@@ -2,6 +2,7 @@ from collections import defaultdict, Counter
 import itertools as it
 
 import intcomp
+import time
 
 directions = (1, 0 + 1j, -1, 0 - 1j)
 
@@ -98,7 +99,6 @@ def get_path_for_part2():
 
     codes = tuple(computer.join())
     s = scaffolds(codes)
-    view_scaffolds(codes)
     return get_path(s)
 
 
@@ -122,9 +122,39 @@ def repeating_subsequences(seq):
     return tuple(reversed(sorted(map(tuple, map(reversed, subseqs.items())))))
 
 
+def to_input(seq):
+    return tuple(map(ord, seq))
+
+
+def part2():
+    program = open("in2").read().strip()
+    computer = intcomp.Computer()
+    computer.run(program)
+
+    main_routine = list("B,C,C,A,A,B,C,C,A,B\n")
+    A = "L,12,L,8,R,10\n"
+    B = "R,4,R,12,R,10,L,12\n"
+    C = "L,12,R,4,R,12\n"
+
+    time.sleep(0.5)
+    drained = computer.get_all()
+
+    for routine in [main_routine, A, B, C]:
+        for i in to_input(routine):
+            computer.input(i)
+    computer.input(ord("n"))
+    computer.input(ord("\n"))
+
+    out = computer.join()
+    return out[-1]
+
+
+
 print(f"Part 1: {part1()}")
 seq = get_path_for_part2().split(",")
-print(",".join(seq))
+#print(",".join(seq))
 #subseqs = repeating_subsequences(seq)
 #for val, sub in subseqs:
 #    print(",".join(sub))
+
+print(f"Part 2: {part2()}")
