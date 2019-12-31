@@ -1,3 +1,7 @@
+from typing import Any
+from dataclasses import dataclass, field
+
+import heapq
 import itertools as it
 import queue
 import string
@@ -80,10 +84,64 @@ def distances_and_doors(maze):
     return dnd
 
 
+def get_actions(key, all_keys, collected_keys, dnd):
+    def is_ok(k):
+        if k in collected_keys:
+            return False
+        doors = dnd[(key, k)][1]
+        return all(map(lambda door: door.lower() in collected_keys, doors))
+
+    def action(k):
+        return dnd[(key, k)][0]
+
+    return dict(map(lambda k: (k, action(k)), filter(is_ok, all_keys)))
+
+
+@dataclass(order=True)
+class ExplorationState:
+    dist: int
+    keys: Any=field(compare=False)
+    key: Any=field(compare=False)
+
+    def __hash__(self):
+        return hash(frozenset(self.keys)) + hash(self.dist) + hash(self.key)
+
+
+def shortest_path(dnd, all_keys):
+    heap = []
+    collected_keys = ["@"]
+
+    initial_state = ExplorationState(0, collected_keys, "@")
+
+    visited = {initial_state}
+
+    heapq.heappush(heap, initial_state)
+
+    while True:
+        state = heapq.heappop(heap)
+        print(state.dist, end="\r")
+
+        possible_actions = get_actions(state.key, all_keys, state.keys, dnd)
+
+        if len(possible_actions) == 0:
+            return state.dist, "".join(state.keys + [state.key])
+
+        for key, dist in possible_actions.items():
+            next_state = ExplorationState(dist + state.dist, state.keys + [key], key)
+            if next_state not in visited:
+                visited.add(next_state)
+                heapq.heappush(heap, next_state)
+
+
 def part1():
-    maze = get_maze(open("test2").readlines())
+    maze = get_maze(open("in").readlines())
+    all_keys = get_keys(inverse(maze))
+    collected_keys = {"@"}
+    print("Computing dnd...", end="\r")
     dnd = distances_and_doors(maze)
-    print(dnd)
+    print("                ", end="\r")
+    #print(get_actions("@", all_keys, collected_keys, dnd))
+    print(shortest_path(dnd, all_keys))
 
 
 part1()
