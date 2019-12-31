@@ -1,3 +1,4 @@
+from collections import defaultdict
 from typing import Any
 from dataclasses import dataclass, field
 
@@ -89,7 +90,7 @@ def get_actions(key, all_keys, collected_keys, dnd):
         if k in collected_keys:
             return False
         doors = dnd[(key, k)][1]
-        return all(map(lambda door: door.lower() in collected_keys, doors))
+        return all(map(lambda door: door.lower() in collected_keys or door.lower() not in all_keys, doors))
 
     def action(k):
         return dnd[(key, k)][0]
@@ -107,7 +108,8 @@ class ExplorationState:
         return hash(frozenset(self.keys)) + hash(self.dist) + hash(self.key)
 
 
-def shortest_path(dnd, all_keys):
+def shortest_path(dnd):
+    all_keys = set(it.chain(*dnd)).union({"@"})
     heap = []
     collected_keys = ["@"]
 
@@ -133,15 +135,67 @@ def shortest_path(dnd, all_keys):
                 heapq.heappush(heap, next_state)
 
 
+def quadrant(c):
+    re, im = c.real, c.imag
+    if re != 0:
+        renorm = re / abs(re)
+    else:
+        renorm = 0
+    if im != 0:
+        imnorm = im / abs(im)
+    else:
+        imnorm = 0
+    return renorm + imnorm * 1j
+
+
+def into_quadrants(dnd, pivot, maze):
+    quadrants = defaultdict(dict)
+    inv = inverse(maze)
+
+    pivot = inv[pivot]
+
+    for k1, k2 in dnd:
+        p1, p2 = inv[k1], inv[k2]
+        q1, q2 = quadrant(p1 - pivot), quadrant(p2 - pivot)
+        if q1 == q2:
+            quadrants[q1][(k1, k2)] = dnd[(k1, k2)]
+        if q1 == 0:
+            quadrants[q2][(k1, k2)] = dnd[(k1, k2)]
+        if q2 == 0:
+            quadrants[q1][(k1, k2)] = dnd[(k1, k2)]
+
+    return quadrants
+
+
+
 def part1():
     maze = get_maze(open("in").readlines())
-    all_keys = get_keys(inverse(maze))
     collected_keys = {"@"}
     print("Computing dnd...", end="\r")
     dnd = distances_and_doors(maze)
     print("                ", end="\r")
     #print(get_actions("@", all_keys, collected_keys, dnd))
-    print(shortest_path(dnd, all_keys))
+    print(shortest_path(dnd))
 
 
-part1()
+def part2():
+    maze = get_maze(open("in").readlines())
+
+    pivot = inverse(maze)["@"]
+    extras = "pqrs"
+    for d, extra in zip(DIRECTIONS, extras):
+        d2 = d * 1j
+        maze[pivot + d + d2] = extra
+
+    dnd = distances_and_doors(maze)
+    quadrants = into_quadrants(dnd, "@", maze)
+
+    s = 0
+    for quadrant in quadrants.values():
+        s += shortest_path(quadrant)[0]
+
+    return s - 8
+
+
+print(f"Part 1: {part1()}")
+print(f"Part 2: {part2()}")
