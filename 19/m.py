@@ -15,10 +15,18 @@ def get_grid(program, xr, yr):
     return grid
 
 
+def view_grid(grid, xr, yr):
+    for x in range(xr):
+        for y in range(yr):
+            print(grid[x + y * 1j], end="")
+        print()
+
+
 def part1():
     program = open("in").read().strip()
 
     grid = get_grid(program, 50, 50)
+    return sum(grid.values())
 
 
-part1()
+print(f"Part 1: {part1()}")
