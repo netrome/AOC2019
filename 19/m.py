@@ -66,46 +66,46 @@ def largest_square(point, grid, xr, yr):
     xsize, ysize = 0, 0
 
     pos = point + xsize
+    passed = False
     for _ in range(200):
         pos = point + xsize
         xsize += 1
-        if grid[pos] != 0:
+
+        if grid[pos] == 1:
+            passed = True
+
+        if passed and grid[pos] == 0:
             break
 
     pos = point + ysize * 1j
+    passed = False
     for _ in range(200):
         pos = point + ysize * 1j
         ysize += 1
-        if grid[pos] != 0:
+
+        if grid[pos] == 1:
+            passed = True
+
+        if passed and grid[pos] == 0:
             break
 
-    return min(xsize, ysize)
+    return min(xsize, ysize) - 1, xsize > ysize
 
 
 def find_squares(grid, xr, yr):
-    start_point = [i for i in range(xr)]
-    for idx in range(10, len(start_points)):
-        val = grid[start_points[idx]]
-        while val == 0:
-            start_points[idx] += 1j
-            val = grid[start_points[idx]]
+    point = 45 + 70j
 
-    # Find all squares
-    for x in range(30, len(start_points)):
-        point = start_points[x]
-        for _ in range(2):
+    while True:
+        size, c = largest_square(point, grid, 100, 100)
+        if size == 100:
+            return point
+        if c:
+            point += 1
+        else:
             point += 1j
-            s = largest_square(point, grid, xr, yr)
-            if s == 100:
-                yield (point, s)
 
-        while True:
-            if grid[point] == 1 or point.real > xr or point.imag > yr:
-                break
-            point += 1j
-            s = largest_square(point, grid, xr, yr)
-            if s == 100:
-                yield (point, s)
+        if point.real > xr or point.imag > yr:
+            return "Noooose"
 
 
 def part1():
@@ -118,13 +118,11 @@ def part1():
 def part2():
     program = open("in").read().strip()
 
-    grid = efficient_grid_finder(program, 5000, 5000)
+    grid = efficient_grid_finder(program, 1400, 1400)
 
-    print("Finding...")
-    l = list(find_squares(grid, 5000, 5000))
-    print("Done.")
-    print(l)
+    point = find_squares(grid, 1400, 1400)
+    return point.real * 10000 + point.imag
 
 
-#print(f"Part 1: {part1()}")
-part2()
+print(f"Part 1: {part1()}")
+print(f"Part 2: {part2()}")
