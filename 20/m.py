@@ -1,6 +1,7 @@
 from collections import defaultdict
 from dataclasses import dataclass
 
+import queue
 import string
 
 
@@ -48,15 +49,50 @@ def get_maze(lines):
             portals[maybe_portal].add(point)
             reverse_portals[point] = maybe_portal
 
-    start = portals["AA"]
-    finish = portals["ZZ"]
+    start = next(iter(portals["AA"]))
+    finish = next(iter(portals["ZZ"]))
 
     return Maze(grid, dict(portals), reverse_portals, start, finish)
+
+
+def possible_moves(point, maze):
+    moves = set()
+
+    for direction in DIRECTIONS:
+        candidate = point + direction
+        if maze.grid[candidate] == ".":
+            moves.add(candidate)
+
+    if point in maze.reverse_portals:
+        for candidate in maze.portals[maze.reverse_portals[point]]:
+            moves.add(candidate)
+
+    return moves
+
+
+def shortest_path(start, finish, maze):
+    to_visit = queue.Queue()
+    to_visit.put((start, 0))
+    seen = {start}
+
+    while not to_visit.empty():
+        point, dist = to_visit.get()
+
+        if point == finish:
+            return dist
+
+        for next_point in filter(lambda p: p not in seen, possible_moves(point, maze)):
+            to_visit.put((next_point, dist+1))
+            seen.add(next_point)
+
+    return None
 
 
 def part1():
     l = open("in").readlines()
     maze = get_maze(l)
 
+    return shortest_path(maze.start, maze.finish, maze)
 
-part1()
+
+print(f"Part 1: {part1()}")
