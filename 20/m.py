@@ -7,6 +7,8 @@ import string
 
 DIRECTIONS = (-1, 1, -1j, 1j)
 
+TORUS_DIVISOR = (18 + 18j, 101 + 101j)
+
 
 @dataclass
 class Maze:
@@ -55,17 +57,29 @@ def get_maze(lines):
     return Maze(grid, dict(portals), reverse_portals, start, finish)
 
 
-def possible_moves(point, maze):
+def _is_inner(point):
+    return point.imag > TORUS_DIVISOR[0].imag and point.real > TORUS_DIVISOR[0].real and point.imag < TORUS_DIVISOR[1].imag and point.real < TORUS_DIVISOR[1].real
+
+
+def possible_moves(point, maze, level=None):
     moves = set()
 
     for direction in DIRECTIONS:
         candidate = point + direction
         if maze.grid[candidate] == ".":
-            moves.add(candidate)
+            if level is not None:
+                moves.add((candidate, level))
+            else:
+                moves.add(candidate)
 
     if point in maze.reverse_portals:
         for candidate in maze.portals[maze.reverse_portals[point]]:
-            moves.add(candidate)
+            if candidate != point:
+                if level is not None:
+                    next_level = level + 1 if _is_inner(point) else level - 1
+                    moves.add((candidate, next_level))
+                else:
+                    moves.add(candidate)
 
     return moves
 
@@ -88,6 +102,24 @@ def shortest_path(start, finish, maze):
     return None
 
 
+def shortest_path_with_level(start, finish, maze):
+    to_visit = queue.Queue()
+    to_visit.put((start, 0, 0))
+    seen = {start}
+
+    while not to_visit.empty():
+        point, level, dist = to_visit.get()
+
+        if point == finish and level == 0:
+            return dist
+
+        for next_point, next_level in filter(lambda p: p not in seen and p[1] >= 0, possible_moves(point, maze, level)):
+            to_visit.put((next_point, next_level, dist+1))
+            seen.add((next_point, next_level))
+
+    return None
+
+
 def part1():
     l = open("in").readlines()
     maze = get_maze(l)
@@ -95,4 +127,12 @@ def part1():
     return shortest_path(maze.start, maze.finish, maze)
 
 
+def part2():
+    l = open("in").readlines()
+    maze = get_maze(l)
+
+    return shortest_path_with_level(maze.start, maze.finish, maze)
+
+
 print(f"Part 1: {part1()}")
+print(f"Part 2: {part2()}")
