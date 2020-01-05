@@ -84,6 +84,36 @@ def indexof(card, deck):
     return tuple(map(lambda t: t[0], filter(lambda t: t[1]==card, enumerate(deck))))[0]
 
 
+def apply_twice(formula):
+    return formula[0] * (1 + formula[1]), formula[1] ** 2
+
+
+def chain(f1, f2):
+    return f1[0] + f1[1] * f2[0], f1[1] * f2[1]
+
+
+def condense_formula(formula, size):
+    return formula[0] % size, formula[1] % size
+
+
+def apply_n_times(formula, n, size):
+    binary = tuple(reversed(tuple(map(int, bin(n)[2:]))))
+
+    formulas = [formula]
+    for _ in range(len(binary) - 1):
+        f = condense_formula(apply_twice(formulas[-1]), size)
+        formulas.append(f)
+
+    assert len(formulas) == len(binary)
+    usable_formulas = tuple(map(lambda t: t[0], filter(lambda t: t[1], zip(formulas, binary))))
+
+    ultimate_formula = usable_formulas[-1]
+    for f in reversed(usable_formulas[:-1]):
+        ultimate_formula = chain(f, ultimate_formula)
+
+    return ultimate_formula
+
+
 def test21():
     deck = tuple(range(10))
     formula = 0, 1
@@ -124,8 +154,9 @@ def part1():
 
     deck = tuple(range(10007))
 
-    for line in instructions:
-        deck = parse_technique(line)(deck)
+    for _ in range(143):
+        for line in instructions:
+            deck = parse_technique(line)(deck)
 
     return indexof(2019, deck)
 
@@ -138,6 +169,8 @@ def part2():
 
     for line in instructions:
         formula = f_parse_technique(line)(formula)
+    
+    formula = apply_n_times(formula, 143, size)
 
     return (formula[0] + formula[1] * 2019) % size
 
