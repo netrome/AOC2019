@@ -172,9 +172,13 @@ def part2():
     
     formula = apply_n_times(formula, times, size)
     formula = condense_formula(formula, size)
-    print(formula)
 
-    return (formula[0] + formula[1] * 2019) % size
+    mod_inv = pow(formula[1], size - 2, size)
+
+    ans = (mod_inv * ((2020 - formula[0]) % size)) % size
+    assert ((formula[0] + formula[1] * ans) % size) == 2020
+
+    return ans
 
 test1()
 test2()
