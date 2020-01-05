@@ -154,9 +154,8 @@ def part1():
 
     deck = tuple(range(10007))
 
-    for _ in range(143):
-        for line in instructions:
-            deck = parse_technique(line)(deck)
+    for line in instructions:
+        deck = parse_technique(line)(deck)
 
     return indexof(2019, deck)
 
@@ -164,13 +163,16 @@ def part1():
 def part2():
     instructions = open("in").readlines()
 
-    size = 10007
+    size = 119315717514047
+    times = 101741582076661
     formula = 0, 1
 
     for line in instructions:
         formula = f_parse_technique(line)(formula)
     
-    formula = apply_n_times(formula, 143, size)
+    formula = apply_n_times(formula, times, size)
+    formula = condense_formula(formula, size)
+    print(formula)
 
     return (formula[0] + formula[1] * 2019) % size
 
